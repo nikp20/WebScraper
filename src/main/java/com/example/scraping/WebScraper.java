@@ -81,7 +81,6 @@ public class WebScraper {
     public static int colIndex(String colText, FirefoxDriver driver){
         Stream<WebElement> dataColElements = driver.findElements(By.xpath("//nba-stat-table[@template=\"player/player-traditional\"]//th")).stream();
         //dataColElements.forEach(data -> System.out.println(data.getText()));
-        System.out.println(driver.findElements(By.xpath("//nba-stat-table[@template=\"player/player-traditional\"]//th")).get(0));
         List<String> dataColNames = dataColElements.map(WebElement::getText)
                 .collect(Collectors.toList());
 

@@ -1,4 +1,5 @@
 import com.example.scraping.WebScraper;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
@@ -34,9 +35,7 @@ public class MyTests {
     @Test
     void getPlayerNameTest() {
         StringBuilder actual = WebScraper.getPlayerName(new String[]{"Goran", "Dragic"});
-        StringBuilder expName = new StringBuilder();
-        expName.append("Goran Dragic");
-        assertEquals(expName.toString(), actual.toString());
+        assertEquals("Goran Dragic", actual.toString());
     }
 
     @Test
@@ -68,5 +67,23 @@ public class MyTests {
         assertEquals(expectedOutput, outContent.toString().substring(0,outContent.size()-2));
         //driver.quit();
 
+    }
+
+    @Test
+    private static void navigateToPlayerStatsTest(){
+        driver.get("https://www.nba.com/players");
+
+        String expected ="https://www.nba.com/stats/player/2544/";
+        StringBuilder name = new StringBuilder("Lebron James");
+
+        WebScraper.navigateToPlayerStats(wait, name, driver);
+        String actual = driver.getCurrentUrl();
+        assertEquals(expected, actual);
+
+    }
+
+    @AfterAll
+    static void shutdown(){
+        driver.quit();
     }
 }

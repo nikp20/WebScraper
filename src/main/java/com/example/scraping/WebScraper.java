@@ -39,7 +39,9 @@ public class WebScraper {
 
             cookieButtonClicker(wait);
 
-            navigateToPlayerStats(wait, playerName);
+            navigateToPlayerStats(wait, playerName, driver);
+
+            setParameter(wait);
 
             int yearColIndex = colIndex("BY YEAR", driver);
             int threePAColIndex = colIndex("3PA", driver);
@@ -53,6 +55,26 @@ public class WebScraper {
         catch (Exception e){
             e.printStackTrace();
             driver.quit();
+        }
+    }
+
+    /**
+     * Sets the per mode parameter to per 40 minutes
+     * @param wait - selenium's wait object, halts the WebDriver until expectation is true
+     */
+    public static void setParameter(WebDriverWait wait){
+
+        wait.until(ExpectedConditions.elementToBeClickable(driver.findElement(By.name("PerMode")))).click();
+
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//option[@label=\"Per 40 Minutes\"]"))).click();
+
+        try {
+            wait.until(ExpectedConditions.presenceOfElementLocated(By.tagName("nba-stat-table")));
+        }
+        catch(NoSuchElementException | TimeoutException e){
+            System.out.println("Error, table not found: check if the desired table displays correctly in your browser");
+            driver.quit();
+            System.exit(0);
         }
     }
 
@@ -94,7 +116,7 @@ public class WebScraper {
      * @param wait - selenium's wait object, halts the WebDriver until expectation is true
      * @param playerName - StringBuilder object of the program arguments, represents player's full name
      */
-    public static void navigateToPlayerStats(WebDriverWait wait, StringBuilder playerName){
+    public static void navigateToPlayerStats(WebDriverWait wait, StringBuilder playerName, FirefoxDriver driver){
         WebElement searchField = wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//input[@placeholder=\"Search Players\"]")));
 
         searchField.sendKeys(playerName);
@@ -105,18 +127,13 @@ public class WebScraper {
         }
         catch (NoSuchElementException | TimeoutException e){
             System.out.println("Error, player not found: check if you input a correct player name");
+            driver.quit();
             System.exit(0);
         }
 
 
         wait.until(ExpectedConditions.elementToBeClickable(driver.findElementByXPath("//a[contains(@href, '/stats/player')]"))).click();
-        try {
-            wait.until(ExpectedConditions.presenceOfElementLocated(By.tagName("nba-stat-table")));
-        }
-        catch(NoSuchElementException | TimeoutException e){
-            System.out.println("Error, table not found: check if the desired table displays correctly in your browser");
-            System.exit(0);
-        }
+
     }
 
     /**

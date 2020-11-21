@@ -37,7 +37,7 @@ public class WebScraper {
             WebDriverWait wait = new WebDriverWait(driver, 10);
 
 
-            cookieButtonClicker(wait);
+            cookieButtonClicker(wait, driver);
 
             navigateToPlayerStats(wait, playerName, driver);
 
@@ -64,7 +64,7 @@ public class WebScraper {
      */
     public static void setParameter(WebDriverWait wait, FirefoxDriver driver){
 
-        wait.until(ExpectedConditions.elementToBeClickable(driver.findElement(By.name("PerMode")))).click();
+        wait.until(ExpectedConditions.elementToBeClickable(driver.findElement(By.xpath("//select[@name=\"PerMode\"]")))).click();
 
         wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//option[@label=\"Per 40 Minutes\"]"))).click();
 
@@ -141,7 +141,7 @@ public class WebScraper {
      *
      * @param wait - selenium's wait object, halts the WebDriver until expectation is true
      */
-    public static void cookieButtonClicker(WebDriverWait wait){
+    public static void cookieButtonClicker(WebDriverWait wait, FirefoxDriver driver){
         try {
             WebElement cookieButton = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.id("onetrust-accept-btn-handler"))).get(0);
             cookieButton.click();

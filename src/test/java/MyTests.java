@@ -70,7 +70,7 @@ public class MyTests {
     void navigateToPlayerStatsTest(){
         driver.get("https://www.nba.com/players");
 
-        WebScraper.cookieButtonClicker(wait);
+        WebScraper.cookieButtonClicker(wait, driver);
 
         String expected ="https://www.nba.com/stats/player/1629029/";
         StringBuilder name = new StringBuilder("Luka Doncic");

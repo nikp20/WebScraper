@@ -41,7 +41,7 @@ public class WebScraper {
 
             navigateToPlayerStats(wait, playerName, driver);
 
-            setParameter(wait);
+            setParameter(wait, driver);
 
             int yearColIndex = colIndex("BY YEAR", driver);
             int threePAColIndex = colIndex("3PA", driver);
@@ -62,7 +62,7 @@ public class WebScraper {
      * Sets the per mode parameter to per 40 minutes
      * @param wait - selenium's wait object, halts the WebDriver until expectation is true
      */
-    public static void setParameter(WebDriverWait wait){
+    public static void setParameter(WebDriverWait wait, FirefoxDriver driver){
 
         wait.until(ExpectedConditions.elementToBeClickable(driver.findElement(By.name("PerMode")))).click();
 

@@ -40,13 +40,12 @@ public class MyTests {
 
     @Test
     void colIndexTest(){
-        driver.get("https://www.nba.com/stats/player/201609/");
+        driver.get("https://www.nba.com/stats/player/1629029/");
         wait.until(ExpectedConditions.presenceOfElementLocated(By.tagName("nba-stat-table")));
 
         int expColIndex = 0;
         int actual = WebScraper.colIndex("BY YEAR", driver);
         assertEquals(expColIndex, actual);
-       // driver.quit();
 
     }
 
@@ -56,7 +55,6 @@ public class MyTests {
         wait.until(ExpectedConditions.presenceOfElementLocated(By.tagName("nba-stat-table")));
 
 
-        //System.out.println(driver.getCurrentUrl());
         ByteArrayOutputStream outContent = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outContent));
 
@@ -65,20 +63,33 @@ public class MyTests {
         String expectedOutput = "2019-20 8.9\r\n2018-19 7.1";
 
         assertEquals(expectedOutput, outContent.toString().substring(0,outContent.size()-2));
-        //driver.quit();
 
     }
 
     @Test
-    private static void navigateToPlayerStatsTest(){
+    void navigateToPlayerStatsTest(){
         driver.get("https://www.nba.com/players");
 
-        String expected ="https://www.nba.com/stats/player/2544/";
-        StringBuilder name = new StringBuilder("Lebron James");
+        WebScraper.cookieButtonClicker(wait);
+
+        String expected ="https://www.nba.com/stats/player/1629029/";
+        StringBuilder name = new StringBuilder("Luka Doncic");
 
         WebScraper.navigateToPlayerStats(wait, name, driver);
         String actual = driver.getCurrentUrl();
         assertEquals(expected, actual);
+
+    }
+
+    @Test
+    void setParameterTest(){
+        driver.get("https://www.nba.com/stats/player/1629029/");
+
+        WebScraper.setParameter(wait, driver);
+
+        String expected = "https://www.nba.com/stats/player/1629029/?Season=2019-20&SeasonType=Regular%20Season&PerMode=Per40";
+
+        assertEquals(expected, driver.getCurrentUrl());
 
     }
 

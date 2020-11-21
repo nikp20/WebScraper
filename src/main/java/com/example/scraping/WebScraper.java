@@ -1,8 +1,11 @@
 package com.example.scraping;
 
 import org.openqa.selenium.*;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.firefox.FirefoxProfile;
+import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -24,13 +27,17 @@ public class WebScraper {
             System.setProperty("webdriver.gecko.driver", "src/main/resources/geckodriver.exe");
             System.setProperty(FirefoxDriver.SystemProperty.BROWSER_LOGFILE,"/dev/null");
             System.setProperty(FirefoxDriver.SystemProperty.DRIVER_USE_MARIONETTE,"true");
-            FirefoxOptions chromeOptions = new FirefoxOptions();
-            chromeOptions.addArguments("--headless");
-            chromeOptions.addArguments("--window-size=1920,1080");
+            FirefoxOptions options = new FirefoxOptions();
+            options.addArguments("--headless");
+            options.addArguments("--window-size=1920,1080");
 
 
-            chromeOptions.setAcceptInsecureCerts(true);
-            driver = new FirefoxDriver(chromeOptions);
+            options.addArguments("-private");
+            FirefoxProfile firefoxProfile = new FirefoxProfile();
+            firefoxProfile.setPreference("browser.privatebrowsing.autostart", true);
+
+            options.setAcceptInsecureCerts(true);
+            driver = new FirefoxDriver(options);
             driver.get("https://www.nba.com/players");
             driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
 

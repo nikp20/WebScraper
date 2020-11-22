@@ -103,6 +103,11 @@ public class WebScraper {
         );
     }
 
+    /**
+     * Transformed 3PA stat from per 36 minutes to per 40 minutes
+     * @param number - number to be transformed
+     * @return 3PA per 40 minutes
+     */
     private static double transform(double number){
         double result = 40.0*number/36.0;
         result = Math.round((result) * 10) / 10.0;

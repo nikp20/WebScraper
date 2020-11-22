@@ -2,6 +2,7 @@ package com.example.scraping;
 
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
@@ -10,6 +11,7 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -31,30 +33,22 @@ public class WebScraper {
             options.addArguments("--headless");
             options.addArguments("--window-size=1920,1080");
 
-
-            options.addArguments("-private");
+            /*options.addArguments("-private");
             FirefoxProfile firefoxProfile = new FirefoxProfile();
-            firefoxProfile.setPreference("browser.privatebrowsing.autostart", true);
+            firefoxProfile.setPreference("browser.privatebrowsing.autostart", true);*/
 
-            options.setAcceptInsecureCerts(true);
             driver = new FirefoxDriver(options);
-            driver.get("https://www.nba.com/players");
-            driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
+            driver.get("https://www.basketball-reference.com/leagues/NBA_2020_per_game.html");
+            driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
 
             WebDriverWait wait = new WebDriverWait(driver, 10);
 
-
-            cookieButtonClicker(wait, driver);
-
             navigateToPlayerStats(wait, playerName, driver);
 
-            setParameter(wait, driver);
-
-            int yearColIndex = colIndex("BY YEAR", driver);
+            int yearColIndex = colIndex("Season", driver);
             int threePAColIndex = colIndex("3PA", driver);
 
             printResults(yearColIndex, threePAColIndex, driver);
-
 
             driver.quit();
 
@@ -69,21 +63,22 @@ public class WebScraper {
      * Sets the per mode parameter to per 40 minutes
      * @param wait - selenium's wait object, halts the WebDriver until expectation is true
      */
+    /*
     public static void setParameter(WebDriverWait wait, FirefoxDriver driver){
 
         wait.until(ExpectedConditions.elementToBeClickable(driver.findElement(By.xpath("//select[@name=\"PerMode\"]")))).click();
 
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//option[@label=\"Per 40 Minutes\"]"))).click();
-
         try {
+            Thread.sleep(1000);
+            wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//option[@label=\"Per 40 Minutes\"]"))).click();
             wait.until(ExpectedConditions.presenceOfElementLocated(By.tagName("nba-stat-table")));
         }
-        catch(NoSuchElementException | TimeoutException e){
+        catch(NoSuchElementException | TimeoutException | InterruptedException e){
             System.out.println("Error, table not found: check if the desired table displays correctly in your browser");
             driver.quit();
             System.exit(0);
         }
-    }
+    }*/
 
     /**
      * Prints the end stats
@@ -91,15 +86,28 @@ public class WebScraper {
      * @param threePAColIndex - index of column that contains 3PA stat
      */
     public static void printResults(int yearColIndex, int threePAColIndex, FirefoxDriver driver){
-        List<WebElement> dataRows = driver.findElements(By.xpath("//nba-stat-table[@template=\"player/player-traditional\"]//tr[count(td) > 1]"));
+        List<WebElement> dataRows = driver.findElements(By.xpath("//table[@id=\"per_minute\"]//tbody//tr[count(td) > 1]"));
+        Collections.reverse(dataRows);
         Stream<WebElement> dataStream = dataRows.stream();
+        System.out.printf("%-7s %s  %s", "Season", "3PA/36", "3PA/40");
+        System.out.println();
+
 
         dataStream.forEach(
                 data -> {
                     String[] split = data.getText().split(" ");
-                    System.out.println(split[yearColIndex]+" "+split[threePAColIndex]);
+                    double threePA40=transform(Double.parseDouble(split[threePAColIndex]));
+                    System.out.printf("%s %6s %7s", split[yearColIndex], split[threePAColIndex], threePA40);
+                    System.out.println();
                 }
         );
+    }
+
+    private static double transform(double number){
+        double result = 40.0*number/36.0;
+        result = Math.round((result) * 10) / 10.0;
+
+        return result;
     }
 
     /**
@@ -108,7 +116,7 @@ public class WebScraper {
      * @return index of searched column
      */
     public static int colIndex(String colText, FirefoxDriver driver){
-        Stream<WebElement> dataColElements = driver.findElements(By.xpath("//nba-stat-table[@template=\"player/player-traditional\"]//th")).stream();
+        Stream<WebElement> dataColElements = driver.findElements(By.xpath("//table[@id=\"per_minute\"]//th")).stream();
         //dataColElements.forEach(data -> System.out.println(data.getText()));
         List<String> dataColNames = dataColElements.map(WebElement::getText)
                 .collect(Collectors.toList());
@@ -124,13 +132,13 @@ public class WebScraper {
      * @param playerName - StringBuilder object of the program arguments, represents player's full name
      */
     public static void navigateToPlayerStats(WebDriverWait wait, StringBuilder playerName, FirefoxDriver driver){
-        WebElement searchField = wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//input[@placeholder=\"Search Players\"]")));
+        WebElement searchField = wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//input[@name=\"search\"]")));
 
         searchField.sendKeys(playerName);
+        searchField.sendKeys(Keys.RETURN);
         try {
+            wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[@class=\"search-item-name\"]//a[contains(@href, \"/players/\")]"))).click();
 
-            wait.until(ExpectedConditions.numberOfElementsToBeLessThan(By.xpath("//table[@class=\"players-list\"]//tr"), 20));
-            wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//table[@class=\"players-list\"]//a"))).click();
         }
         catch (NoSuchElementException | TimeoutException e){
             System.out.println("Error, player not found: check if you input a correct player name");
@@ -139,8 +147,6 @@ public class WebScraper {
         }
 
 
-        wait.until(ExpectedConditions.elementToBeClickable(driver.findElementByXPath("//a[contains(@href, '/stats/player')]"))).click();
-
     }
 
     /**
@@ -148,6 +154,7 @@ public class WebScraper {
      *
      * @param wait - selenium's wait object, halts the WebDriver until expectation is true
      */
+    /*
     public static void cookieButtonClicker(WebDriverWait wait, FirefoxDriver driver){
         try {
             WebElement cookieButton = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.id("onetrust-accept-btn-handler"))).get(0);
@@ -155,9 +162,9 @@ public class WebScraper {
             driver.navigate().refresh();
             waitForPageLoaded(wait);
         }
-        catch (NoSuchElementException  | StaleElementReferenceException ignored) {
+        catch (NoSuchElementException | StaleElementReferenceException ignored) {
         }
-    }
+    }*/
 
 
     /**

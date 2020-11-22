@@ -12,6 +12,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -28,12 +29,12 @@ public class MyTests {
         options.addArguments("--headless");
         options.addArguments("--window-size=1920,1080");
 
-        options.addArguments("-private");
-        FirefoxProfile firefoxProfile = new FirefoxProfile();
-        firefoxProfile.setPreference("browser.privatebrowsing.autostart", true);
+        /*FirefoxProfile firefoxProfile = new FirefoxProfile();
+        firefoxProfile.setPreference("browser.privatebrowsing.autostart", true);*/
 
         options.setAcceptInsecureCerts(true);
         driver = new FirefoxDriver(options);
+        driver.manage().deleteAllCookies();
         wait=new WebDriverWait(driver, 10);
     }
 
@@ -47,29 +48,33 @@ public class MyTests {
     @Test
     @Order(2)
     void colIndexTest(){
-        driver.get("https://www.nba.com/stats/player/2544/");
-        WebScraper.cookieButtonClicker(wait, driver);
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.tagName("nba-stat-table")));
+        driver.get("https://www.basketball-reference.com/players/d/doncilu01.html");
+
+        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//table[@id=\"per_minute\"]")));
 
         int expColIndex = 0;
-        int actual = WebScraper.colIndex("BY YEAR", driver);
-        assertEquals(expColIndex, actual);
 
+        int actual = WebScraper.colIndex("Season", driver);
+
+        assertEquals(expColIndex, actual);
     }
 
     @Test
     @Order(3)
     void printTest(){
-        driver.get("https://www.nba.com/stats/player/2544/");
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.tagName("nba-stat-table")));
+        driver.get("https://www.basketball-reference.com/players/d/doncilu01.html");
+
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//table[@id=\"per_minute\"]")));
 
 
         ByteArrayOutputStream outContent = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outContent));
 
-        WebScraper.printResults(0, 9, driver);
+        WebScraper.printResults(0, 12, driver);
 
-        String expectedOutput = "2019-20 8.9\r\n2018-19 7.1";
+        String expectedOutput = "Season  3PA/36  3PA/40\r\n"+"2019-20    9.5    10.6\r\n2018-19    8.0     8.9";
 
         assertEquals(expectedOutput, outContent.toString().substring(0,outContent.size()-2));
 
@@ -78,29 +83,18 @@ public class MyTests {
     @Test
     @Order(4)
     void navigateToPlayerStatsTest(){
-        driver.get("https://www.nba.com/players");
+        driver.get("https://www.basketball-reference.com/leagues/NBA_2020_per_game.html");
 
 
-        String expected ="https://www.nba.com/stats/player/1629029/";
+        String expected ="https://www.basketball-reference.com/players/d/doncilu01.html";
+
         StringBuilder name = new StringBuilder("Luka Doncic");
 
         WebScraper.navigateToPlayerStats(wait, name, driver);
+
         String actual = driver.getCurrentUrl();
+
         assertEquals(expected, actual);
-
-    }
-
-    @Test
-    @Order(5)
-    void setParameterTest(){
-        driver.get("https://www.nba.com/stats/player/2544/");
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.tagName("nba-stat-table")));
-
-        WebScraper.setParameter(wait, driver);
-
-        String expected = "https://www.nba.com/stats/player/1629029/?Season=2019-20&SeasonType=Regular%20Season&PerMode=Per40";
-
-        assertEquals(expected, driver.getCurrentUrl());
 
     }
 

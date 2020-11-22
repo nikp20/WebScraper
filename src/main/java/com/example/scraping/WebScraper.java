@@ -108,7 +108,7 @@ public class WebScraper {
      * @param number - number to be transformed
      * @return 3PA per 40 minutes
      */
-    private static double transform(double number){
+    public static double transform(double number){
         double result = 40.0*number/36.0;
         result = Math.round((result) * 10) / 10.0;
 
@@ -153,24 +153,6 @@ public class WebScraper {
 
 
     }
-
-    /**
-     *  Accepts cookies if a popup is shown.
-     *
-     * @param wait - selenium's wait object, halts the WebDriver until expectation is true
-     */
-    /*
-    public static void cookieButtonClicker(WebDriverWait wait, FirefoxDriver driver){
-        try {
-            WebElement cookieButton = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.id("onetrust-accept-btn-handler"))).get(0);
-            cookieButton.click();
-            driver.navigate().refresh();
-            waitForPageLoaded(wait);
-        }
-        catch (NoSuchElementException | StaleElementReferenceException ignored) {
-        }
-    }*/
-
 
     /**
      * Waits for page to be refreshed.

@@ -98,6 +98,14 @@ public class MyTests {
 
     }
 
+    @Test
+    @Order(5)
+    void transformationTest(){
+        double expected = 10.6;
+        double actual = WebScraper.transform(9.5);
+        assertEquals(expected, actual);
+    }
+
     @AfterAll
     static void shutdown(){
         driver.quit();
